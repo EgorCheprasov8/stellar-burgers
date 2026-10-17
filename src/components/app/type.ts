@@ -6,3 +6,12 @@ export type AppContentProps = {
   isLoading: boolean;
   error: SerializedError | null;
 };
+
+export type TDetailPageProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+export type TOrderModalProps = {
+  onClose: () => void;
+};
