@@ -35,7 +35,7 @@ const ORDER_NUMBER = '91337';
 const ACCESS_TOKEN = 'Bearer test-access-token';
 const REFRESH_TOKEN = 'test-refresh-token';
 
-const mockIngredients = async (page: Page): Promise<void> => {
+const interceptIngredientsRequest = async (page: Page): Promise<void> => {
   await page.routeFromHAR(HAR.ingredients, { url: `${API_URL}/ingredients` });
 };
 
@@ -48,7 +48,7 @@ const addIngredient = async (page: Page, id: string): Promise<void> => {
 
 test.describe('добавление ингредиентов в конструктор', () => {
   test.beforeEach(async ({ page }) => {
-    await mockIngredients(page);
+    await interceptIngredientsRequest(page);
     await page.goto('/');
   });
 
@@ -84,8 +84,12 @@ test.describe('добавление ингредиентов в конструк
 
 test.describe('модальное окно с описанием ингредиента', () => {
   test.beforeEach(async ({ page }) => {
-    await mockIngredients(page);
+    await interceptIngredientsRequest(page);
     await page.goto('/');
+
+    /* До клика модального окна на странице нет */
+    await expect(page.getByTestId('modal')).toHaveCount(0);
+
     await page.getByTestId(`ingredient-${MAIN.id}`).getByRole('link').click();
   });
 
@@ -129,7 +133,7 @@ test.describe('оформление заказа', () => {
       window.localStorage.setItem('refreshToken', refreshToken);
     }, REFRESH_TOKEN);
 
-    await mockIngredients(page);
+    await interceptIngredientsRequest(page);
     await page.routeFromHAR(HAR.user, { url: `${API_URL}/auth/user` });
     await page.routeFromHAR(HAR.order, { url: `${API_URL}/orders` });
 
@@ -152,11 +156,15 @@ test.describe('оформление заказа', () => {
     await expect(page.getByTestId('constructor-bun-top')).toContainText(BUN.name);
     await expect(constructorIngredients.getByRole('listitem')).toHaveCount(2);
 
+    /* До оформления заказа нет ни модального окна, ни номера заказа */
+    const modal = page.getByTestId('modal');
+    await expect(modal).toHaveCount(0);
+    await expect(page.getByTestId('order-number')).toHaveCount(0);
+
     await page.getByRole('button', { name: 'Оформить заказ' }).click();
 
-    const modal = page.getByTestId('modal');
     await expect(modal).toBeVisible();
-    await expect(page.getByTestId('order-number')).toHaveText(ORDER_NUMBER);
+    await expect(modal.getByTestId('order-number')).toHaveText(ORDER_NUMBER);
 
     /* Конструктор пуст */
     await expect(page.getByTestId('constructor-bun-top')).toHaveCount(0);

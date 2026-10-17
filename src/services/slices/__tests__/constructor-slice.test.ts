@@ -22,18 +22,21 @@ const initialState: TConstructorState = {
   ingredients: [],
 };
 
-const withId = (ingredient: TIngredient, id: string): TConstructorIngredient => ({
+const createConstructorIngredient = (
+  ingredient: TIngredient,
+  id: string
+): TConstructorIngredient => ({
   ...ingredient,
   id,
 });
 
 /* Состояние с булкой и тремя начинками — для удаления, перемещения и очистки */
 const filledState: TConstructorState = {
-  bun: withId(bun, 'bun-1'),
+  bun: createConstructorIngredient(bun, 'bun-1'),
   ingredients: [
-    withId(main, 'main-1'),
-    withId(sauce, 'sauce-1'),
-    withId(main, 'main-2'),
+    createConstructorIngredient(main, 'main-1'),
+    createConstructorIngredient(sauce, 'sauce-1'),
+    createConstructorIngredient(main, 'main-2'),
   ],
 };
 
